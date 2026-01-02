@@ -402,7 +402,7 @@ main {
 }
 
 .stat-label {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.4px;
@@ -410,14 +410,14 @@ main {
 }
 
 .stat-icon {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     background: #e0e7ff;
-    border-radius: 8px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 html.dark .stat-icon {
@@ -425,14 +425,14 @@ html.dark .stat-icon {
 }
 
 .stat-value {
-    font-size: 28px;
+    font-size: 22px;
     font-weight: 700;
     color: var(--text);
     margin-bottom: 4px;
 }
 
 .stat-change {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--success);
     font-weight: 500;
 }
@@ -495,7 +495,7 @@ html.dark .stat-icon {
 }
 
 .card-title {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--text);
     margin: 0;
@@ -503,7 +503,7 @@ html.dark .stat-icon {
 }
 
 .card-subtitle {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-muted);
     margin: 2px 0 0 0;
 }
@@ -512,12 +512,12 @@ html.dark .stat-icon {
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 6px 12px;
+    padding: 5px 10px;
     background: transparent;
     border: 1px solid var(--border);
     border-radius: 6px;
     color: var(--text-muted);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
@@ -546,8 +546,8 @@ html.dark .stat-icon {
 .recent-task-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px;
+    gap: 10px;
+    padding: 10px;
     background: var(--bg-alt);
     border: 1px solid transparent;
     border-radius: 8px;
@@ -562,10 +562,10 @@ html.dark .stat-icon {
 }
 
 .recent-task-checkbox {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border: 2px solid var(--border);
-    border-radius: 5px;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -592,10 +592,10 @@ html.dark .stat-icon {
 }
 
 .recent-task-title {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--text);
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     display: -webkit-box;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
@@ -605,8 +605,8 @@ html.dark .stat-icon {
 .recent-task-meta {
     display: flex;
     align-items: center;
-    gap: 12px;
-    font-size: 12px;
+    gap: 10px;
+    font-size: 11px;
     color: var(--text-muted);
 }
 
@@ -617,8 +617,8 @@ html.dark .stat-icon {
 }
 
 .recent-task-meta svg {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
 }
 
 .recent-task-badge {
@@ -712,7 +712,7 @@ html.dark .badge-completed {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
     color: var(--text);
 }
@@ -734,13 +734,13 @@ html.dark .badge-completed {
 }
 
 .progress-stat-label {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-muted);
     margin-bottom: 6px;
 }
 
 .progress-stat-value {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--primary);
 }
@@ -1597,15 +1597,15 @@ html.dark ::-webkit-scrollbar-thumb:hover {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 32px;
+    padding: 20px;
+    margin-bottom: 24px;
 }
 
 .progress-icon {
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
     background: linear-gradient(135deg, var(--primary), var(--secondary));
-    border-radius: 12px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1635,9 +1635,10 @@ html.dark ::-webkit-scrollbar-thumb:hover {
 }
 
 .milestones-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
 }
 
 .section-title {

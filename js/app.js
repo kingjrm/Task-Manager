@@ -711,20 +711,31 @@ const App = {
 
         milestones.forEach(milestone => {
             const milestoneElement = document.createElement('div');
-            milestoneElement.className = `p-4 rounded-lg transition ${
-                milestone.achieved 
-                    ? 'bg-green-100 dark:bg-green-900/20 border-2 border-green-500' 
-                    : 'bg-slate-100 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700'
-            }`;
+            milestoneElement.style.display = 'flex';
+            milestoneElement.style.flexDirection = 'column';
+            milestoneElement.style.alignItems = 'center';
+            milestoneElement.style.justifyContent = 'center';
+            milestoneElement.style.gap = '6px';
+            milestoneElement.style.padding = '12px 16px';
+            milestoneElement.style.borderRadius = '8px';
+            milestoneElement.style.transition = 'all 0.2s';
+            milestoneElement.style.minWidth = '100px';
+            milestoneElement.style.textAlign = 'center';
+            
+            if (milestone.achieved) {
+                milestoneElement.style.background = 'rgba(34, 197, 94, 0.1)';
+                milestoneElement.style.border = '1px solid rgba(34, 197, 94, 0.3)';
+            } else {
+                milestoneElement.style.background = 'var(--bg-alt)';
+                milestoneElement.style.border = '1px solid var(--border)';
+                milestoneElement.style.opacity = '0.6';
+            }
+            
             milestoneElement.innerHTML = `
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <span style="font-size: 16px; line-height: 1; ${milestone.achieved ? '' : 'opacity: 0.3;'}">${milestone.icon}</span>
-                        <span class="font-semibold text-slate-900 dark:text-white">${milestone.label}</span>
-                    </div>
-                    <span class="text-sm font-bold text-slate-600 dark:text-slate-400">${milestone.percentage}%</span>
-                </div>
-                ${milestone.achieved ? `<div class="mt-2 text-sm text-green-700 dark:text-green-300 font-semibold flex items-center gap-1">${Icons.check} Achieved</div>` : ''}
+                <div style="font-size: 20px; line-height: 1;">${milestone.icon}</div>
+                <div style="font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px;">${milestone.percentage}%</div>
+                <div style="font-size: 11px; font-weight: 500; color: var(--text);">${milestone.label}</div>
+                ${milestone.achieved ? `<div style="font-size: 9px; color: #22c55e; font-weight: 600; margin-top: 2px;">✓ Achieved</div>` : ''}
             `;
             milestonesList.appendChild(milestoneElement);
         });

@@ -37,12 +37,10 @@ try {
             u.is_active,
             u.created_at,
             u.updated_at,
-            COUNT(DISTINCT t.id) as total_tasks,
-            SUM(CASE WHEN ts.name = 'Completed' THEN 1 ELSE 0 END) as completed_tasks
+            COUNT(DISTINCT t.id) as task_count
         FROM users u
         LEFT JOIN tasks t ON u.id = t.user_id
-        LEFT JOIN task_statuses ts ON t.status_id = ts.id
-        GROUP BY u.id
+        GROUP BY u.id, u.username, u.email, u.full_name, u.user_type, u.is_active, u.created_at, u.updated_at
         ORDER BY u.created_at DESC
     ");
     
@@ -56,7 +54,7 @@ try {
     
     echo json_encode([
         'success' => true,
-        'users' => $users
+        'data' => $users
     ]);
     
 } catch (Exception $e) {

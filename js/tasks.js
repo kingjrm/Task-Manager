@@ -38,7 +38,20 @@ const TaskManager = {
     // Filter tasks
     filterTasks(tasks, status = 'all') {
         if (status === 'all') return tasks;
-        return tasks.filter(t => t.status === status);
+        
+        return tasks.filter(t => {
+            // Handle both API format (status_name) and localStorage format (status)
+            const taskStatus = (t.status_name || t.status || '').toLowerCase();
+            const filterStatus = status.toLowerCase();
+            
+            // Normalize status names for comparison
+            const normalizeStatus = (s) => {
+                if (s === 'in-progress' || s === 'in progress') return 'in-progress';
+                return s;
+            };
+            
+            return normalizeStatus(taskStatus) === normalizeStatus(filterStatus);
+        });
     },
 
     // Search tasks

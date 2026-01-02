@@ -60,7 +60,10 @@
                             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                         </svg>
                     </div>
-                    <h3 style="font-size: 16px; font-weight: 600; color: var(--text);">User Management</h3>
+                    <div>
+                        <h3 style="font-size: 16px; font-weight: 600; color: var(--text); margin: 0;">User Management</h3>
+                        <p style="font-size: 12px; color: var(--text-muted); margin: 4px 0 0 0;">Manage all registered users and their permissions</p>
+                    </div>
                 </div>
                 <button id="refreshUsersBtn" class="settings-btn settings-btn-secondary" style="padding: 8px 12px;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -71,6 +74,12 @@
                     <span>Refresh</span>
                 </button>
             </div>
+
+            <!-- Search bar -->
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="searchUsers" placeholder="Search by name, email, or username..." class="settings-input" style="width: 100%;">
+            </div>
+
             <div id="usersTableContainer" style="overflow-x: auto;">
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
