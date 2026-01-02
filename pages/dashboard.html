@@ -1,0 +1,139 @@
+<div id="dashboard-page" class="page-section active">
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">Total Tasks</span>
+                <div class="stat-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-value" id="statTotal">0</div>
+            <div class="stat-change">+0 this month</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">Completed</span>
+                <div class="stat-icon" style="background: var(--success); color: white;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-value" id="statCompleted" style="color: var(--success);">0</div>
+            <div class="stat-change">Keep it up!</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">In Progress</span>
+                <div class="stat-icon" style="background: var(--primary); color: white;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
+                        <path d="M12 6v6l4 2.5"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-value" id="statInProgress" style="color: var(--primary);">0</div>
+            <div class="stat-change">Working on tasks</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">Completion</span>
+                <div class="stat-icon" style="background: var(--warning); color: white;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-value" id="statCompletion">0%</div>
+            <div class="stat-change">Overall progress</div>
+        </div>
+    </div>
+
+    <!-- Recent Tasks and Progress -->
+    <div class="dashboard-grid">
+        <!-- Recent Tasks -->
+        <div class="recent-tasks-card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="card-title">Recent Tasks</h3>
+                        <p class="card-subtitle">Your latest activities</p>
+                    </div>
+                </div>
+                <button class="view-all-btn" onclick="navigateTo('tasks')">
+                    <span>View All</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="dashboardTasks" class="recent-tasks-list">
+                <div class="empty-state">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.3; margin: 0 auto 12px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    <p>No tasks yet</p>
+                    <button class="empty-action-btn" onclick="document.getElementById('newTaskBtn').click()">Create Your First Task</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Summary -->
+        <div class="progress-summary-card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="card-title">Progress Summary</h3>
+                        <p class="card-subtitle">Track your completion</p>
+                    </div>
+                </div>
+            </div>
+            <div class="progress-summary-content">
+                <div class="progress-display">
+                    <div class="progress-circle">
+                        <svg class="progress-ring" width="120" height="120">
+                            <circle class="progress-ring-circle" stroke="var(--border)" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"></circle>
+                            <circle id="progressRingFill" class="progress-ring-fill" stroke="url(#gradient)" stroke-width="8" fill="transparent" r="52" cx="60" cy="60" stroke-dasharray="326.73" stroke-dashoffset="326.73" stroke-linecap="round"></circle>
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="progress-percentage" id="progressPercent">0%</div>
+                    </div>
+                    <div class="progress-stats">
+                        <div class="progress-stat-item">
+                            <span class="progress-stat-label">Completed</span>
+                            <span class="progress-stat-value" id="progressCompleted">0</span>
+                        </div>
+                        <div class="progress-stat-item">
+                            <span class="progress-stat-label">Remaining</span>
+                            <span class="progress-stat-value" id="progressRemaining">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

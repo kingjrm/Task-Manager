@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OJT App - Setup Wizard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 50px 40px;
+            text-align: center;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .steps {
+            text-align: left;
+            margin-bottom: 40px;
+        }
+
+        .step {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+            font-size: 18px;
+        }
+
+        .step-content h3 {
+            color: #1f2937;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .step-content p {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+            margin: 8px 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .button-secondary {
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+
+        .button-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .note {
+            background: #f0fdf4;
+            border-left: 4px solid #10b981;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: left;
+            margin-top: 30px;
+            color: #065f46;
+            font-size: 14px;
+        }
+
+        .note strong {
+            color: #047857;
+        }
+
+        .icon {
+            margin-right: 5px;
+        }
+
+        .status-box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-ready {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-pending {
+            background: #fed7aa;
+            color: #92400e;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 30px 0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">📋</div>
+        <h1>OJT Organizer</h1>
+        <p class="subtitle">Complete Database Connection Setup</p>
+
+        <div class="status-box">
+            <div class="status-item">
+                <span class="status-icon status-ready">✓</span>
+                <span>Frontend: Ready</span>
+            </div>
+            <div class="status-item">
+                <span class="status-icon status-ready">✓</span>
+                <span>API Endpoints: Configured</span>
+            </div>
+            <div class="status-item">
+                <span class="status-icon status-pending">!</span>
+                <span>Database: Waiting to import</span>
+            </div>
+        </div>
+
+        <h2 style="font-size: 20px; color: #1f2937; margin-bottom: 20px;">Setup in 3 Steps</h2>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Import Database Schema</h3>
+                    <p>Create the MySQL database with all required tables and test data</p>
+                    <div class="button-group">
+                        <a href="import-db.php" class="button">
+                            <span class="icon">📦</span> Import Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Verify Connection</h3>
+                    <p>Test that database, API, and frontend are all connected properly</p>
+                    <div class="button-group">
+                        <a href="test-connection.php" class="button">
+                            <span class="icon">🔍</span> Run Tests
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Start Using the App</h3>
+                    <p>Create tasks and they will automatically save to your database</p>
+                    <div class="button-group">
+                        <a href="index.html" class="button">
+                            <span class="icon">🚀</span> Open App
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2 style="font-size: 16px; color: #1f2937; margin-bottom: 15px;">Documentation</h2>
+
+        <div class="button-group" style="justify-content: center;">
+            <a href="QUICK_START.md" class="button button-secondary">
+                <span class="icon">⚡</span> Quick Start
+            </a>
+            <a href="SYSTEM_CONNECTION_GUIDE.md" class="button button-secondary">
+                <span class="icon">📚</span> Full Guide
+            </a>
+            <a href="DATABASE_SETUP.md" class="button button-secondary">
+                <span class="icon">🗄️</span> Database Setup
+            </a>
+        </div>
+
+        <div class="note">
+            <strong>💡 Pro Tip:</strong> If you already ran import-db.php, skip to step 2 (Run Tests) to verify everything is working correctly.
+        </div>
+
+        <div class="note" style="background: #eff6ff; border-color: #3b82f6; color: #1e40af; margin-top: 15px;">
+            <strong>ℹ️ Default Test User:</strong> testuser / password123 (created during import)
+        </div>
+    </div>
+</body>
+</html>

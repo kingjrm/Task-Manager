@@ -1,0 +1,40 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+error_log
+*.log
+
+# Backups
+*.bak
+*.backup
+*~
+
+# Temp files
+/temp/
+/tmp/
+*.tmp
+
+# Node (if using npm)
+node_modules/
+package-lock.json
+
+# Database backups
+*.sql.bak
+database_backup/
+
+# Config backups
+config.php.bak
