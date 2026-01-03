@@ -26,11 +26,11 @@
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
                     <div style="padding: 10px; background: var(--bg-alt); border-radius: 6px; text-align: center;">
-                        <div style="font-size: 14px; font-weight: 700; color: var(--primary);">0</div>
+                        <div id="progressCompletedCount" style="font-size: 14px; font-weight: 700; color: var(--primary);">0</div>
                         <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px;">Completed</div>
                     </div>
                     <div style="padding: 10px; background: var(--bg-alt); border-radius: 6px; text-align: center;">
-                        <div style="font-size: 14px; font-weight: 700; color: #3b82f6;">0</div>
+                        <div id="progressRemainingCount" style="font-size: 14px; font-weight: 700; color: #3b82f6;">0</div>
                         <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px;">Remaining</div>
                     </div>
                 </div>
@@ -51,12 +51,12 @@
 
     <!-- Milestones -->
     <div style="margin-top: 24px;">
-        <h3 style="font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+        <h3 style="font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
             <div style="width: 20px; height: 20px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px;">⭐</div>
             Milestones
         </h3>
-        <div id="milestones" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
-            <div class="empty-state" style="padding: 20px;">No milestones yet</div>
+        <div id="milestones" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+            <div class="empty-state" style="padding: 20px; grid-column: 1 / -1;">No milestones yet</div>
         </div>
     </div>
 </div>

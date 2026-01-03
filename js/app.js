@@ -8,7 +8,9 @@ const App = {
         settings: {},
         userId: null, // Will be set from window.currentUser after auth
         apiUrl: 'api',
-        isSubmitting: false // Prevent duplicate submissions
+        isSubmitting: false, // Prevent duplicate submissions
+        activityLog: [],
+        activityFilter: 'all'
     },
 
     // Initialize the app
@@ -28,6 +30,9 @@ const App = {
         // Ensure test user exists in database
         await this.ensureUserExists();
         
+        // Load activity log first (per user)
+        this.loadActivityLog();
+
         // Try to load from database, fallback to localStorage
         await this.loadTasks();
         this.state.settings = Storage.loadSettings();
@@ -37,6 +42,89 @@ const App = {
         this.render();
         
         console.log('OJT Organizer initialized successfully');
+    },
+
+    // Load activity log persistence
+    loadActivityLog() {
+        const key = `ojt_activity_log_user_${this.state.userId || 'guest'}`;
+        try {
+            const saved = localStorage.getItem(key);
+            this.state.activityLog = saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            console.warn('Failed to load activity log', e);
+            this.state.activityLog = [];
+        }
+    },
+
+    generateInitialActivities() {
+        // Generate activities from existing tasks if log is empty
+        if (this.state.activityLog.length === 0 && this.state.tasks.length > 0) {
+            console.log('Generating initial activities from existing tasks');
+            
+            this.state.tasks.forEach(task => {
+                // Add creation activity
+                const createdAt = task.created_at || task.createdAt || new Date().toISOString();
+                this.state.activityLog.push({
+                    id: `${task.id}_created`,
+                    action: 'created',
+                    taskId: task.id,
+                    title: task.title || task.name || 'Task',
+                    status: task.status_id || task.status || 'pending',
+                    category: task.category_name || task.category || 'Uncategorized',
+                    timestamp: createdAt
+                });
+                
+                // Add completion activity if completed
+                if (task.status_name === 'Completed' || task.status === 'completed' || task.status === '3') {
+                    const completedAt = task.updated_at || task.updatedAt || new Date().toISOString();
+                    this.state.activityLog.push({
+                        id: `${task.id}_completed`,
+                        action: 'status',
+                        taskId: task.id,
+                        title: task.title || task.name || 'Task',
+                        status: 'Completed',
+                        category: task.category_name || task.category || 'Uncategorized',
+                        timestamp: completedAt
+                    });
+                }
+            });
+            
+            // Sort by timestamp descending
+            this.state.activityLog.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            this.saveActivityLog();
+            console.log('Generated', this.state.activityLog.length, 'initial activities');
+        }
+    },
+
+    saveActivityLog() {
+        const key = `ojt_activity_log_user_${this.state.userId || 'guest'}`;
+        try {
+            localStorage.setItem(key, JSON.stringify(this.state.activityLog.slice(-200)));
+        } catch (e) {
+            console.warn('Failed to save activity log', e);
+        }
+    },
+
+    logActivity(action, payload = {}) {
+        const entry = {
+            id: `${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+            action,
+            taskId: payload.taskId || null,
+            title: payload.title || 'Untitled Task',
+            status: payload.status || null,
+            category: payload.category || null,
+            timestamp: new Date().toISOString()
+        };
+        this.state.activityLog.unshift(entry);
+        this.saveActivityLog();
+    },
+
+    setActivityFilter(filter) {
+        this.state.activityFilter = filter;
+        document.querySelectorAll('.timeline-filter-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.filter === filter);
+        });
+        this.renderTimeline();
     },
 
     // Ensure test user exists in database
@@ -91,6 +179,9 @@ const App = {
                     console.log('Tasks loaded from API:', this.state.tasks.length, 'tasks');
                     // Clear localStorage to prevent confusion
                     localStorage.removeItem('tasks');
+                    
+                    // Generate initial activities from tasks
+                    this.generateInitialActivities();
                     return;
                 } else {
                     console.warn('API returned error:', result.message);
@@ -105,6 +196,9 @@ const App = {
         console.log('Using localStorage fallback');
         this.state.tasks = Storage.loadTasks();
         console.log('Tasks loaded from localStorage:', this.state.tasks.length, 'tasks');
+        
+        // Generate initial activities from fallback tasks
+        this.generateInitialActivities();
     },
 
     // Setup all event listeners
@@ -137,7 +231,7 @@ const App = {
             });
         }
 
-        // Filter buttons
+        // Task filter buttons
         document.querySelectorAll('.filter-btn').forEach(btn => {
             // Clone each button to remove old listeners
             const newBtn = btn.cloneNode(true);
@@ -146,6 +240,13 @@ const App = {
             newBtn.addEventListener('click', (e) => {
                 this.filterTasks(newBtn.dataset.filter);
             });
+        });
+
+        // Timeline filter buttons
+        document.querySelectorAll('.timeline-filter-btn').forEach(btn => {
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            newBtn.addEventListener('click', () => this.setActivityFilter(newBtn.dataset.filter));
         });
     },
 
@@ -165,6 +266,13 @@ const App = {
         const taskPriority = document.getElementById('taskPriority').value;
         const taskDueDate = document.getElementById('taskDueDate').value;
         const taskStatus = document.getElementById('taskStatus').value;
+        
+        // OJT Fields
+        const taskDatePerformed = document.getElementById('taskDatePerformed').value;
+        const taskHoursRendered = document.getElementById('taskHoursRendered').value;
+        const taskDepartment = document.getElementById('taskDepartment').value.trim();
+        const taskSupervisor = document.getElementById('taskSupervisor').value.trim();
+        const taskRemarks = document.getElementById('taskRemarks').value.trim();
 
         if (!taskName || !taskCategory || !taskPriority) {
             UI.showNotification('Please fill in all required fields', 'error');
@@ -175,6 +283,7 @@ const App = {
 
         if (this.state.editingTaskId) {
             // Update existing task via API
+            const previousTask = this.state.tasks.find(t => t.id === this.state.editingTaskId);
             try {
                 const response = await fetch(`${this.state.apiUrl}/tasks.php?id=${this.state.editingTaskId}`, {
                     method: 'PUT',
@@ -186,13 +295,25 @@ const App = {
                         category_id: taskCategory,
                         priority_id: taskPriority,
                         due_date: taskDueDate || null,
-                        status_id: taskStatus || 1
+                        status_id: taskStatus || 1,
+                        date_performed: taskDatePerformed || null,
+                        hours_rendered: taskHoursRendered || null,
+                        department: taskDepartment,
+                        supervisor: taskSupervisor,
+                        remarks: taskRemarks
                     })
                 });
                 
                 const result = await response.json();
                 
                 if (response.ok && result.success) {
+                    const statusChanged = previousTask && (previousTask.status_id || previousTask.status) !== taskStatus;
+                    this.logActivity(statusChanged ? 'status' : 'updated', {
+                        taskId: this.state.editingTaskId,
+                        title: taskName,
+                        status: taskStatus,
+                        category: taskCategory
+                    });
                     await this.loadTasks();
                     this.render();
                     this.closeTaskModal();
@@ -221,7 +342,12 @@ const App = {
                         category_id: taskCategory,
                         priority_id: taskPriority,
                         due_date: taskDueDate || null,
-                        status_id: taskStatus || 1
+                        status_id: taskStatus || 1,
+                        date_performed: taskDatePerformed || null,
+                        hours_rendered: taskHoursRendered || null,
+                        department: taskDepartment,
+                        supervisor: taskSupervisor,
+                        remarks: taskRemarks
                     })
                 });
                 
@@ -229,6 +355,12 @@ const App = {
                 console.log('Create response:', response.status, result);
                 
                 if (response.ok && result.success) {
+                    this.logActivity('created', {
+                        taskId: result.data?.id,
+                        title: taskName,
+                        status: taskStatus,
+                        category: taskCategory
+                    });
                     console.log('Task created successfully, reloading...');
                     await this.loadTasks();
                     console.log('Tasks loaded:', this.state.tasks.length);
@@ -265,6 +397,14 @@ const App = {
             document.getElementById('taskCategory').value = task.category_id || task.category || '';
             document.getElementById('taskPriority').value = task.priority_id || task.priority || '';
             document.getElementById('taskDueDate').value = task.due_date || task.dueDate || '';
+            
+            // OJT Fields
+            document.getElementById('taskDatePerformed').value = task.date_performed || '';
+            document.getElementById('taskHoursRendered').value = task.hours_rendered || '';
+            document.getElementById('taskDepartment').value = task.department || '';
+            document.getElementById('taskSupervisor').value = task.supervisor || '';
+            document.getElementById('taskRemarks').value = task.remarks || '';
+            
             const statusValue = task.status_id || task.status || '1';
             document.getElementById('taskStatus').value = statusValue;
             
@@ -321,6 +461,7 @@ const App = {
         
         try {
             console.log('Sending DELETE request for task:', id);
+            const taskToDelete = this.state.tasks.find(t => t.id === id);
             
             const response = await fetch(`${this.state.apiUrl}/tasks.php?id=${id}`, {
                 method: 'DELETE',
@@ -342,6 +483,12 @@ const App = {
             console.log('DELETE result:', result);
             
             if (response.ok && result.success) {
+                this.logActivity('deleted', {
+                    taskId: id,
+                    title: taskToDelete?.title || taskToDelete?.name || 'Task',
+                    status: taskToDelete?.status || taskToDelete?.status_name,
+                    category: taskToDelete?.category || taskToDelete?.category_name
+                });
                 UI.showNotification('Task deleted successfully!', 'success');
                 // Reload tasks from API
                 await this.loadTasks();
@@ -432,6 +579,19 @@ const App = {
 
     // Close task modal
     closeTaskModal() {
+        // Clear all form fields
+        document.getElementById('taskForm').reset();
+        
+        // Clear OJT fields specifically
+        document.getElementById('taskDatePerformed').value = '';
+        document.getElementById('taskHoursRendered').value = '';
+        document.getElementById('taskDepartment').value = '';
+        document.getElementById('taskSupervisor').value = '';
+        document.getElementById('taskRemarks').value = '';
+        
+        // Reset to create mode
+        document.getElementById('modalTitle').textContent = 'Add New Task';
+        
         UI.closeModal('taskModal');
         this.state.editingTaskId = null;
     },
@@ -616,6 +776,12 @@ const App = {
         const categoryName = task.category_name || task.category || 'Uncategorized';
         const priorityName = task.priority_name || task.priority || 'medium';
         const dueDate = Utils.formatDate(task.due_date || task.dueDate);
+        
+        // OJT Fields
+        const datePerformed = task.date_performed ? Utils.formatDate(task.date_performed) : null;
+        const hoursRendered = task.hours_rendered ? `${task.hours_rendered} hrs` : null;
+        const department = task.department;
+        const supervisor = task.supervisor;
 
         const statusEmoji = {
             'Pending': 'tasks',
@@ -625,6 +791,19 @@ const App = {
             'in-progress': 'progress',
             'completed': 'check'
         };
+
+        // Build OJT metadata if available
+        let ojtMeta = '';
+        if (datePerformed || hoursRendered || department || supervisor) {
+            ojtMeta = `
+                <div class="task-ojt-meta" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(99, 102, 241, 0.1); font-size: 11px;">
+                    ${datePerformed ? `<span style="background: rgba(34, 197, 94, 0.15); color: #22c55e; padding: 2px 6px; border-radius: 3px; margin-right: 4px;">📅 ${datePerformed}</span>` : ''}
+                    ${hoursRendered ? `<span style="background: rgba(168, 85, 247, 0.15); color: #a855f7; padding: 2px 6px; border-radius: 3px; margin-right: 4px;">⏱️ ${hoursRendered}</span>` : ''}
+                    ${department ? `<span style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 2px 6px; border-radius: 3px; margin-right: 4px;">🏢 ${department}</span>` : ''}
+                    ${supervisor ? `<span style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 2px 6px; border-radius: 3px;">👤 ${supervisor}</span>` : ''}
+                </div>
+            `;
+        }
 
         div.innerHTML = `
             <div style="flex: 1; min-width: 0;">
@@ -643,6 +822,7 @@ const App = {
                         ${dueDate}
                     </span>
                 </div>
+                ${ojtMeta}
             </div>
             <div style="display: flex; gap: 6px; flex-shrink: 0;">
                 <button class="task-btn task-edit-btn" data-task-id="${task.id}" style="color: #3b82f6;" title="Edit">${Icons.render('edit')}</button>
@@ -654,7 +834,56 @@ const App = {
     },
 
     // Render progress section
-    renderProgress() {
+    async renderProgress() {
+        try {
+            // Fetch progress data from API
+            const response = await fetch(`${this.state.apiUrl}/progress.php?user_id=${this.state.userId}`);
+            const result = await response.json();
+            
+            console.log('Progress API response:', result);
+            
+            if (result.success) {
+                const data = result.data;
+                
+                // Update overall progress
+                const overallProgressBar = document.getElementById('overallProgressBar');
+                const overallPercent = document.getElementById('overallPercent');
+                const completionPercentage = parseFloat(data.overall.completion_percentage) || 0;
+                
+                console.log('Completion percentage:', completionPercentage);
+                
+                if (overallProgressBar) overallProgressBar.style.width = `${completionPercentage}%`;
+                if (overallPercent) overallPercent.textContent = `${Math.round(completionPercentage)}%`;
+                
+                // Update completed and remaining counts using the correct IDs
+                const completedEl = document.getElementById('progressCompletedCount');
+                const remainingEl = document.getElementById('progressRemainingCount');
+                
+                if (completedEl) completedEl.textContent = data.overall.completed_tasks || 0;
+                if (remainingEl) {
+                    const remaining = (data.overall.total_tasks || 0) - (data.overall.completed_tasks || 0);
+                    remainingEl.textContent = remaining;
+                }
+                
+                // Update category progress
+                this.renderCategoryProgressFromAPI(data.by_category || []);
+                
+                // Update milestones based on actual progress
+                this.renderMilestonesFromProgress(completionPercentage);
+            } else {
+                console.error('Failed to fetch progress:', result.message);
+                // Fallback to local calculation
+                this.renderProgressFallback();
+            }
+        } catch (error) {
+            console.error('Error fetching progress:', error);
+            // Fallback to local calculation
+            this.renderProgressFallback();
+        }
+    },
+    
+    // Fallback progress rendering using local state
+    renderProgressFallback() {
         const progress = Progress.calculateProgress(this.state.tasks);
         
         // Update overall progress bar
@@ -670,7 +899,48 @@ const App = {
         this.renderMilestones();
     },
 
-    // Render category progress
+    // Render category progress from API data
+    renderCategoryProgressFromAPI(categories) {
+        const categoryProgressDiv = document.getElementById('categoryProgress');
+        if (!categoryProgressDiv) return;
+        
+        categoryProgressDiv.innerHTML = '';
+
+        if (!categories || categories.length === 0) {
+            categoryProgressDiv.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted); grid-column: 1 / -1;">No tasks in any category yet</div>';
+            return;
+        }
+
+        categories.forEach(category => {
+            const categoryElement = document.createElement('div');
+            categoryElement.style.cssText = 'background: var(--bg-alt); border-radius: 12px; padding: 16px; border: 1px solid var(--border);';
+            
+            const percentage = category.percentage || 0;
+            const colorHex = category.color_hex || '#6366f1';
+            
+            categoryElement.innerHTML = `
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-weight: 600; color: var(--text); font-size: 13px;">${category.name}</span>
+                        <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">${category.completed}/${category.total}</span>
+                    </div>
+                    <div style="width: 100%; background: var(--bg-card); border-radius: 4px; height: 8px; overflow: hidden;">
+                        <div style="background: ${colorHex}; height: 100%; transition: width 0.5s ease; border-radius: 4px;" class="progress-bar-fill" data-width="${percentage}"></div>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 11px; color: var(--text-muted); font-weight: 600;">${Math.round(percentage)}% complete</div>
+                </div>
+            `;
+            categoryProgressDiv.appendChild(categoryElement);
+            
+            // Animate progress bar
+            setTimeout(() => {
+                const bar = categoryElement.querySelector('.progress-bar-fill');
+                if (bar) bar.style.width = `${percentage}%`;
+            }, 100);
+        });
+    },
+    
+    // Render category progress (fallback using local state)
     renderCategoryProgress() {
         const categoryProgress = Progress.getCategoryProgress(this.state.tasks);
         const categoryProgressDiv = document.getElementById('categoryProgress');
@@ -679,29 +949,109 @@ const App = {
         categoryProgressDiv.innerHTML = '';
 
         if (Object.keys(categoryProgress).length === 0) {
-            categoryProgressDiv.innerHTML = '<div class="text-slate-500 text-center py-8">No tasks in any category yet</div>';
+            categoryProgressDiv.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">No tasks in any category yet</div>';
             return;
         }
 
         Object.entries(categoryProgress).forEach(([category, data]) => {
             const categoryElement = document.createElement('div');
-            categoryElement.className = 'bg-slate-100 dark:bg-slate-800 rounded-lg p-4';
+            categoryElement.style.cssText = 'background: var(--bg-alt); border-radius: 12px; padding: 16px; border: 1px solid var(--border);';
             categoryElement.innerHTML = `
                 <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="font-medium text-slate-900 dark:text-white capitalize">${category}</span>
-                        <span class="text-sm font-semibold text-slate-600 dark:text-slate-400">${data.completed}/${data.total}</span>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-weight: 600; color: var(--text); font-size: 13px; text-transform: capitalize;">${category}</span>
+                        <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">${data.completed}/${data.total}</span>
                     </div>
-                    <div class="w-full bg-slate-300 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
-                        <div class="bg-slate-900 dark:bg-white h-full transition-all duration-500" style="width: ${data.percentage}%"></div>
+                    <div style="width: 100%; background: var(--bg-card); border-radius: 4px; height: 8px; overflow: hidden;">
+                        <div style="background: var(--primary); height: 100%; transition: width 0.5s ease; width: ${data.percentage}%; border-radius: 4px;"></div>
                     </div>
+                    <div style="margin-top: 8px; font-size: 11px; color: var(--text-muted); font-weight: 600;">${data.percentage}% complete</div>
                 </div>
             `;
             categoryProgressDiv.appendChild(categoryElement);
         });
     },
 
-    // Render milestones
+    // Render milestones based on progress percentage from API
+    renderMilestonesFromProgress(progress) {
+        const milestonesList = document.getElementById('milestones');
+        if (!milestonesList) return;
+        
+        milestonesList.innerHTML = '';
+        
+        const milestones = [
+            { percentage: 25, label: 'Getting Started', icon: '🔥', color: '#f59e0b' },
+            { percentage: 50, label: 'Halfway There!', icon: '⭐', color: '#3b82f6' },
+            { percentage: 75, label: 'Almost Done', icon: '💪', color: '#8b5cf6' },
+            { percentage: 100, label: 'All Complete!', icon: '🎉', color: '#10b981' }
+        ];
+
+        milestones.forEach((milestone, index) => {
+            const achieved = progress >= milestone.percentage;
+            const milestoneElement = document.createElement('div');
+            
+            milestoneElement.style.cssText = `
+                position: relative;
+                background: var(--bg-card);
+                border: 2px solid ${achieved ? milestone.color : 'var(--border)'};
+                border-radius: 16px;
+                padding: 20px 16px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                cursor: pointer;
+                overflow: hidden;
+                ${achieved ? `box-shadow: 0 4px 20px ${milestone.color}30;` : 'opacity: 0.7;'}
+            `;
+            
+            // Add background effect for achieved milestones
+            const bgEffect = achieved ? `
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, ${milestone.color}15, ${milestone.color}05); pointer-events: none;"></div>
+            ` : '';
+            
+            milestoneElement.innerHTML = `
+                ${bgEffect}
+                <div style="position: relative; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; background: ${achieved ? `linear-gradient(135deg, ${milestone.color}, ${milestone.color}dd)` : 'var(--bg-alt)'}; border-radius: 50%; font-size: 24px; margin-bottom: 4px; box-shadow: ${achieved ? `0 4px 12px ${milestone.color}40` : 'none'}; transition: all 0.3s;">
+                    ${milestone.icon}
+                </div>
+                <div style="position: relative; font-size: 20px; font-weight: 800; color: ${achieved ? milestone.color : 'var(--text-muted)'}; margin-bottom: 2px;">${milestone.percentage}%</div>
+                <div style="position: relative; font-size: 12px; font-weight: 600; color: var(--text); text-align: center; line-height: 1.3;">${milestone.label}</div>
+                ${achieved ? `
+                    <div style="position: relative; margin-top: 4px; padding: 4px 10px; background: ${milestone.color}20; border-radius: 12px; display: flex; align-items: center; gap: 4px;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${milestone.color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span style="font-size: 10px; color: ${milestone.color}; font-weight: 700;">ACHIEVED</span>
+                    </div>
+                ` : `
+                    <div style="position: relative; margin-top: 4px; padding: 4px 10px; background: var(--bg-alt); border-radius: 12px;">
+                        <span style="font-size: 10px; color: var(--text-muted); font-weight: 600;">LOCKED</span>
+                    </div>
+                `}
+            `;
+            
+            // Add hover effect
+            milestoneElement.addEventListener('mouseenter', () => {
+                if (achieved) {
+                    milestoneElement.style.transform = 'translateY(-4px)';
+                    milestoneElement.style.boxShadow = `0 8px 30px ${milestone.color}40`;
+                }
+            });
+            milestoneElement.addEventListener('mouseleave', () => {
+                milestoneElement.style.transform = 'translateY(0)';
+                if (achieved) {
+                    milestoneElement.style.boxShadow = `0 4px 20px ${milestone.color}30`;
+                }
+            });
+            
+            milestonesList.appendChild(milestoneElement);
+        });
+    },
+    
+    // Render milestones (fallback using local state)
     renderMilestones() {
         const milestones = Progress.getMilestones(this.state.tasks);
         const milestonesList = document.getElementById('milestones');
@@ -741,37 +1091,136 @@ const App = {
         });
     },
 
-    // Render timeline
+    // Render timeline from activity log
     renderTimeline() {
         const timelineList = document.getElementById('timelineList');
         if (!timelineList) return;
         
         timelineList.innerHTML = '';
 
-        const sortedTasks = Utils.sortByDate(this.state.tasks, 'updated_at' || 'updatedAt', 'desc');
+        // Use tasks as the main data source for timeline
+        let items = this.state.tasks.map(task => ({
+            id: task.id,
+            title: task.title || task.name || 'Untitled',
+            description: task.description,
+            category: task.category_name || task.category,
+            status: task.status_name || task.status,
+            priority: task.priority_name || task.priority,
+            dueDate: task.due_date || task.dueDate,
+            datePerformed: task.date_performed,
+            hoursRendered: task.hours_rendered,
+            department: task.department,
+            supervisor: task.supervisor,
+            remarks: task.remarks,
+            updatedAt: task.updated_at || task.createdAt,
+            createdAt: task.created_at || task.createdAt
+        }));
 
-        if (sortedTasks.length === 0) {
-            timelineList.innerHTML = '<div class="text-slate-500 text-center py-8">No activities yet</div>';
+        // Filter based on activity filter
+        if (this.state.activityFilter !== 'all') {
+            // For non-all filters, use activity log
+            const filtered = this.state.activityLog.filter(item => {
+                if (this.state.activityFilter === 'status') return item.action === 'status';
+                return item.action === this.state.activityFilter;
+            });
+            
+            if (filtered.length === 0) {
+                timelineList.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 16px;">No activities yet</div>';
+                return;
+            }
+            
+            filtered.forEach((item, index) => {
+                const timelineElement = document.createElement('div');
+                timelineElement.className = 'timeline-item';
+                timelineElement.style.animationDelay = `${index * 0.05}s`;
+
+                const timeAgo = Utils.getTimeAgo(new Date(item.timestamp));
+                const badgeColors = {
+                    created: '#22c55e',
+                    updated: '#3b82f6',
+                    status: '#f59e0b',
+                    deleted: '#ef4444'
+                };
+                const actionLabels = {
+                    created: 'Created',
+                    updated: 'Updated',
+                    status: 'Status Changed',
+                    deleted: 'Deleted'
+                };
+                const color = badgeColors[item.action] || 'var(--primary)';
+                const actionLabel = actionLabels[item.action] || 'Activity';
+
+                timelineElement.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: 8px;">
+                        <div>
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                                <span style="display:inline-flex; align-items:center; justify-content:center; padding:4px 8px; border-radius:999px; background:${color}15; color:${color}; font-weight:700; font-size:11px;">${actionLabel}</span>
+                                ${item.category ? `<span style="font-size:11px; color: var(--text-muted); font-weight:600;">${item.category}</span>` : ''}
+                            </div>
+                            <h4 style="font-weight: 600; color: var(--text); margin: 0; font-size: 13px;">${item.title}</h4>
+                            ${item.status ? `<p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0 0;">Status: <span style="font-weight: 600; color: var(--text);">${item.status}</span></p>` : ''}
+                        </div>
+                        <span style="font-size: 12px; color: var(--text-muted);">${timeAgo}</span>
+                    </div>
+                `;
+                timelineList.appendChild(timelineElement);
+            });
             return;
         }
 
-        sortedTasks.forEach((task, index) => {
+        // For "all" filter, show full task timeline with OJT data
+        if (items.length === 0) {
+            timelineList.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 16px;">No tasks yet</div>';
+            return;
+        }
+
+        // Sort by most recent
+        items.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+        items.forEach((item, index) => {
             const timelineElement = document.createElement('div');
-            timelineElement.className = 'timeline-item p-4 border-l-2 border-slate-300 dark:border-slate-700 pl-6';
+            timelineElement.className = 'timeline-item';
             timelineElement.style.animationDelay = `${index * 0.05}s`;
 
-            const taskDate = task.updated_at || task.updatedAt || task.created_at || task.createdAt;
-            const timeAgo = Utils.getTimeAgo(new Date(taskDate));
-            const taskTitle = task.title || task.name || 'Untitled Task';
-            const taskStatus = task.status_name || task.status || 'pending';
+            const timeAgo = Utils.getTimeAgo(new Date(item.updatedAt));
+            
+            // Determine status color
+            const statusColors = {
+                'Pending': '#f59e0b',
+                'In Progress': '#3b82f6',
+                'Completed': '#10b981',
+                'pending': '#f59e0b',
+                'in-progress': '#3b82f6',
+                'completed': '#10b981'
+            };
+            const statusColor = statusColors[item.status] || '#6b7280';
+
+            // Build OJT data section
+            let ojtData = '';
+            if (item.datePerformed || item.hoursRendered || item.department || item.supervisor) {
+                ojtData = `
+                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(99, 102, 241, 0.1); display: flex; gap: 6px; flex-wrap: wrap; font-size: 11px;">
+                        ${item.datePerformed ? `<span style="background: rgba(34, 197, 94, 0.15); color: #22c55e; padding: 2px 6px; border-radius: 3px;">📅 ${Utils.formatDate(item.datePerformed)}</span>` : ''}
+                        ${item.hoursRendered ? `<span style="background: rgba(168, 85, 247, 0.15); color: #a855f7; padding: 2px 6px; border-radius: 3px;">⏱️ ${item.hoursRendered}h</span>` : ''}
+                        ${item.department ? `<span style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 2px 6px; border-radius: 3px;">🏢 ${item.department}</span>` : ''}
+                        ${item.supervisor ? `<span style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 2px 6px; border-radius: 3px;">👤 ${item.supervisor}</span>` : ''}
+                    </div>
+                `;
+            }
 
             timelineElement.innerHTML = `
-                <div>
-                    <div class="flex justify-between items-start">
-                        <h4 style="font-weight: 600; color: var(--text); margin: 0; font-size: 13px;">${taskTitle}</h4>
-                        <span style="font-size: 12px; color: var(--text-muted);">${timeAgo}</span>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: 8px;">
+                    <div style="flex: 1;">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                            <span style="display:inline-flex; align-items:center; justify-content:center; padding:4px 8px; border-radius:999px; background:${statusColor}15; color:${statusColor}; font-weight:700; font-size:11px;">${item.status}</span>
+                            ${item.priority ? `<span style="font-size:11px; color: var(--text-muted); font-weight:600;">Priority: ${item.priority}</span>` : ''}
+                        </div>
+                        <h4 style="font-weight: 600; color: var(--text); margin: 0; font-size: 13px;">${item.title}</h4>
+                        ${item.description ? `<p style="font-size: 12px; color: var(--text-muted); margin: 4px 0 0 0; line-height: 1.4;">${item.description}</p>` : ''}
+                        ${item.category ? `<p style="font-size: 11px; color: var(--text-muted); margin: 4px 0 0 0;">Category: <span style="font-weight: 600; color: var(--text);">${item.category}</span></p>` : ''}
+                        ${ojtData}
                     </div>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; margin: 0; padding: 0;">Status: <span style="font-weight: 500; color: var(--text);">${taskStatus}</span></p>
+                    <span style="font-size: 12px; color: var(--text-muted); white-space: nowrap;">${timeAgo}</span>
                 </div>
             `;
             timelineList.appendChild(timelineElement);

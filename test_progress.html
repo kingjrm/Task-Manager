@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Progress Test</title>
+</head>
+<body>
+    <h1>Progress API Test</h1>
+    <div id="output"></div>
+    
+    <script>
+        async function testProgress() {
+            const output = document.getElementById('output');
+            
+            // Test with user ID 2
+            const response = await fetch('api/progress.php?user_id=2');
+            const result = await response.json();
+            
+            output.innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+        }
+        
+        testProgress();
+    </script>
+</body>
+</html>

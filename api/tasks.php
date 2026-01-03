@@ -72,14 +72,21 @@ try {
         $dueDate = $data['due_date'] ?? null;
         $estimatedHours = $data['estimated_hours'] ?? null;
         
+        // OJT Fields
+        $datePerformed = $data['date_performed'] ?? null;
+        $hoursRendered = $data['hours_rendered'] ?? null;
+        $department = isset($data['department']) ? trim($data['department']) : null;
+        $supervisor = isset($data['supervisor']) ? trim($data['supervisor']) : null;
+        $remarks = isset($data['remarks']) ? trim($data['remarks']) : null;
+        
         // Log the incoming request
-        error_log("[TASK CREATE] User: $userId, Title: $title, Category: $categoryId, Priority: $priorityId");
+        error_log("[TASK CREATE] User: $userId, Title: $title, Category: $categoryId, Priority: $priorityId, Date: $datePerformed, Hours: $hoursRendered");
         
         // Execute the insert
         $insertResult = $db->execute(
-            "INSERT INTO tasks (user_id, title, description, category_id, priority_id, status_id, due_date, estimated_hours, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())",
-            [$userId, $title, $description, $categoryId, $priorityId, $statusId, $dueDate, $estimatedHours]
+            "INSERT INTO tasks (user_id, title, description, category_id, priority_id, status_id, due_date, estimated_hours, date_performed, hours_rendered, department, supervisor, remarks, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())",
+            [$userId, $title, $description, $categoryId, $priorityId, $statusId, $dueDate, $estimatedHours, $datePerformed, $hoursRendered, $department, $supervisor, $remarks]
         );
         
         if (!$insertResult) {
@@ -108,7 +115,7 @@ try {
         
         $updates = [];
         $params = [];
-        $allowedFields = ['title', 'description', 'category_id', 'priority_id', 'status_id', 'due_date', 'estimated_hours', 'actual_hours', 'completion_percentage'];
+        $allowedFields = ['title', 'description', 'category_id', 'priority_id', 'status_id', 'due_date', 'estimated_hours', 'actual_hours', 'completion_percentage', 'date_performed', 'hours_rendered', 'department', 'supervisor', 'remarks'];
         
         foreach ($allowedFields as $field) {
             if (isset($data[$field])) {

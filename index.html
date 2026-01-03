@@ -42,6 +42,9 @@
         });
     </script>
     
+    <!-- Sidebar Overlay for Mobile -->
+    <div id="sidebarOverlay"></div>
+
     <!-- Sidebar -->
     <aside id="sidebar">
         <!-- Logo -->
@@ -108,9 +111,18 @@
         <!-- Header -->
         <header>
             <div class="header-content">
-                <div>
-                    <h2 id="pageTitle">Dashboard</h2>
-                    <p id="pageSubtitle">Welcome back to your OJT journey</p>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <button id="mobileMenuToggle" class="mobile-menu-toggle" style="display: none; background: none; border: none; padding: 8px; cursor: pointer; color: var(--text); z-index: 1000;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div>
+                        <h2 id="pageTitle">Dashboard</h2>
+                        <p id="pageSubtitle">Welcome back to your OJT journey</p>
+                    </div>
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center;">
                     <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--bg-alt); border-radius: 8px; margin-right: 8px;">
@@ -136,38 +148,38 @@
     <!-- Task Modal -->
     <div id="taskModal">
         <div class="modal-content">
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px;">
-                <h3 id="modalTitle" style="font-size: 20px; font-weight: 700; color: var(--text); margin: 0;">Add Task</h3>
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+                <h3 id="modalTitle" style="font-size: 18px; font-weight: 700; color: var(--text); margin: 0;">Add Task</h3>
                 <button type="button" id="cancelBtn" class="modal-close-btn" style="background: transparent; border: none; cursor: pointer; padding: 4px; color: var(--text-muted); transition: all 0.2s;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
                 </button>
             </div>
 
-            <form id="taskForm" class="task-form" style="display: grid; gap: 24px;">
-                <div class="form-section" style="display: grid; gap: 16px;">
-                    <h4 class="form-section-title" style="font-size: 14px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; margin: 0;">Task Details</h4>
+            <form id="taskForm" class="task-form" style="display: grid; gap: 18px;">
+                <div class="form-section" style="display: grid; gap: 12px;">
+                    <h4 class="form-section-title" style="font-size: 12px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.6; margin: 0;">Task Details</h4>
                     
-                    <div class="form-group" style="display: grid; gap: 6px;">
-                        <label class="form-label" style="font-weight: 600; font-size: 14px; color: var(--text);">Task Name<span class="required" style="color: #ef4444;">*</span></label>
-                        <input type="text" id="taskName" class="form-input" placeholder="Enter task name" required style="padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-alt); color: var(--text); font-size: 14px; transition: all 0.2s;">
+                    <div class="form-group" style="display: grid; gap: 5px;">
+                        <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text);">Task Name<span class="required" style="color: #ef4444;">*</span></label>
+                        <input type="text" id="taskName" class="form-input" placeholder="Enter task name" required style="padding: 9px 11px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-alt); color: var(--text); font-size: 13px; transition: all 0.2s;">
                     </div>
 
-                    <div class="form-group" style="display: grid; gap: 6px;">
-                        <label class="form-label" style="font-weight: 600; font-size: 14px; color: var(--text);">Description</label>
-                        <textarea id="taskDescription" class="form-textarea" placeholder="Enter task description" rows="3" style="padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-alt); color: var(--text); font-size: 14px; font-family: inherit; transition: all 0.2s;"></textarea>
+                    <div class="form-group" style="display: grid; gap: 5px;">
+                        <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text);">Description</label>
+                        <textarea id="taskDescription" class="form-textarea" placeholder="Enter task description" rows="2" style="padding: 9px 11px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-alt); color: var(--text); font-size: 13px; font-family: inherit; transition: all 0.2s;"></textarea>
                     </div>
                 </div>
 
-                <div class="form-section" style="display: grid; gap: 16px;">
-                    <h4 class="form-section-title" style="font-size: 14px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; margin: 0;">Organization</h4>
+                <div class="form-section" style="display: grid; gap: 12px;">
+                    <h4 class="form-section-title" style="font-size: 12px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.6; margin: 0;">Organization</h4>
                     
-                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                        <div class="form-group" style="display: grid; gap: 6px;">
-                            <label class="form-label" style="font-weight: 600; font-size: 14px; color: var(--text);">Category<span class="required" style="color: #ef4444;">*</span></label>
-                            <select id="taskCategory" class="form-select" required style="padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-alt); color: var(--text); font-size: 14px; cursor: pointer; transition: all 0.2s;">
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group" style="display: grid; gap: 5px;">
+                            <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text);">Category<span class="required" style="color: #ef4444;">*</span></label>
+                            <select id="taskCategory" class="form-select" required style="padding: 9px 11px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-alt); color: var(--text); font-size: 13px; cursor: pointer; transition: all 0.2s;">
                                 <option value="">Select category</option>
                                 <option value="1">Development</option>
                                 <option value="2">Design</option>
@@ -177,9 +189,9 @@
                             </select>
                         </div>
 
-                        <div class="form-group" style="display: grid; gap: 6px;">
-                            <label class="form-label" style="font-weight: 600; font-size: 14px; color: var(--text);">Priority<span class="required" style="color: #ef4444;">*</span></label>
-                            <select id="taskPriority" class="form-select" required style="padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-alt); color: var(--text); font-size: 14px; cursor: pointer; transition: all 0.2s;">
+                        <div class="form-group" style="display: grid; gap: 5px;">
+                            <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text);">Priority<span class="required" style="color: #ef4444;">*</span></label>
+                            <select id="taskPriority" class="form-select" required style="padding: 9px 11px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-alt); color: var(--text); font-size: 13px; cursor: pointer; transition: all 0.2s;">
                                 <option value="">Select priority</option>
                                 <option value="1">High</option>
                                 <option value="2">Medium</option>
@@ -189,44 +201,70 @@
                     </div>
                 </div>
 
-                <div class="form-section" style="display: grid; gap: 16px;">
-                    <h4 class="form-section-title" style="font-size: 14px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; margin: 0;">Schedule & Status</h4>
+                <div class="form-section" style="display: grid; gap: 12px;">
+                    <h4 class="form-section-title" style="font-size: 12px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.6; margin: 0;">Schedule & Status</h4>
                     
-                    <div class="form-group" style="display: grid; gap: 6px;">
-                        <label class="form-label" style="font-weight: 600; font-size: 14px; color: var(--text);">Due Date</label>
-                        <input type="date" id="taskDueDate" class="form-input" style="padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-alt); color: var(--text); font-size: 14px; transition: all 0.2s;">
+                    <div class="form-group" style="display: grid; gap: 5px;">
+                        <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text);">Due Date</label>
+                        <input type="date" id="taskDueDate" class="form-input" style="padding: 9px 11px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-alt); color: var(--text); font-size: 13px; transition: all 0.2s;">
                     </div>
 
-                    <div class="form-group" style="display: grid; gap: 12px;">
-                        <label class="form-label" style="font-weight: 600; font-size: 14px; color: var(--text);">Status<span class="required" style="color: #ef4444;">*</span></label>
-                        <div class="status-selector" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
-                            <button type="button" class="status-btn" data-status="1" aria-label="Pending" style="padding: 10px; background: var(--bg-alt); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text); transition: all 0.2s;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <div class="form-group" style="display: grid; gap: 5px;">
+                        <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text);">Date Performed (OJT)</label>
+                        <input type="date" id="taskDatePerformed" class="form-input" style="padding: 9px 11px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-alt); color: var(--text); font-size: 13px; transition: all 0.2s;">
+                    </div>
+
+                    <div class="form-group" style="display: grid; gap: 5px;">
+                        <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text);">Hours Rendered</label>
+                        <input type="number" id="taskHoursRendered" class="form-input" step="0.5" min="0" max="9999" placeholder="e.g., 8.5 or 500" style="padding: 9px 11px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-alt); color: var(--text); font-size: 13px; transition: all 0.2s;">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group" style="display: grid; gap: 5px;">
+                            <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text);">Department</label>
+                            <input type="text" id="taskDepartment" class="form-input" placeholder="e.g., IT Dept" style="padding: 9px 11px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-alt); color: var(--text); font-size: 13px; transition: all 0.2s;">
+                        </div>
+                        <div class="form-group" style="display: grid; gap: 5px;">
+                            <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text);">Supervisor</label>
+                            <input type="text" id="taskSupervisor" class="form-input" placeholder="e.g., Name" style="padding: 9px 11px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-alt); color: var(--text); font-size: 13px; transition: all 0.2s;">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="display: grid; gap: 5px;">
+                        <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text);">Remarks</label>
+                        <textarea id="taskRemarks" class="form-input" placeholder="Additional notes..." rows="2" style="padding: 9px 11px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-alt); color: var(--text); font-size: 13px; font-family: inherit; transition: all 0.2s;"></textarea>
+                    </div>
+
+                    <div class="form-group" style="display: grid; gap: 8px;">
+                        <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text);">Status<span class="required" style="color: #ef4444;">*</span></label>
+                        <div class="status-selector" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                            <button type="button" class="status-btn" data-status="1" aria-label="Pending" style="padding: 8px 10px; background: var(--bg-alt); border: 2px solid var(--border); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--text); transition: all 0.2s;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                     <circle cx="12" cy="12" r="10"></circle>
                                 </svg>
                                 <span>Pending</span>
                             </button>
-                            <button type="button" class="status-btn" data-status="2" aria-label="In Progress" style="padding: 10px; background: var(--bg-alt); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text); transition: all 0.2s;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <button type="button" class="status-btn" data-status="2" aria-label="In Progress" style="padding: 8px 10px; background: var(--bg-alt); border: 2px solid var(--border); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--text); transition: all 0.2s;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
                                     <path d="M12 6v6l4 2.5"></path>
                                 </svg>
-                                <span>In Progress</span>
+                                <span>Progress</span>
                             </button>
-                            <button type="button" class="status-btn" data-status="3" aria-label="Completed" style="padding: 10px; background: var(--bg-alt); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text); transition: all 0.2s;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <button type="button" class="status-btn" data-status="3" aria-label="Completed" style="padding: 8px 10px; background: var(--bg-alt); border: 2px solid var(--border); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--text); transition: all 0.2s;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                     <polyline points="20 6 9 17 4 12"></polyline>
                                 </svg>
-                                <span>Completed</span>
+                                <span>Done</span>
                             </button>
                         </div>
                         <input type="hidden" id="taskStatus" value="1" required>
                     </div>
                 </div>
 
-                <div class="modal-buttons" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; border-top: 1px solid var(--border); padding-top: 24px;">
-                    <button type="submit" class="btn btn-primary" style="padding: 12px 20px; background: linear-gradient(135deg, var(--primary), #8b5cf6); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s;">Save Task</button>
-                    <button type="button" id="cancelBtnForm" class="btn btn-secondary" style="padding: 12px 20px; background: var(--bg-alt); color: var(--text); border: 1px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s;">Cancel</button>
+                <div class="modal-buttons" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; border-top: 1px solid var(--border); padding-top: 16px;">
+                    <button type="submit" class="btn btn-primary" style="padding: 10px 18px; background: linear-gradient(135deg, var(--primary), #8b5cf6); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.2s;">Save Task</button>
+                    <button type="button" id="cancelBtnForm" class="btn btn-secondary" style="padding: 10px 18px; background: var(--bg-alt); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.2s;">Cancel</button>
                 </div>
             </form>
         </div>
@@ -258,6 +296,53 @@
 
     <!-- Scripts -->
     <script src="js/icons.js"></script>
+    <script>
+        // Mobile menu toggle functionality
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const pageBody = document.body;
+
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            const isOpen = !sidebar.classList.contains('mobile-open');
+            if (isOpen) {
+                window.scrollTo({ top: 0, behavior: 'auto' });
+            }
+            sidebar.classList.toggle('mobile-open', isOpen);
+            sidebarOverlay.classList.toggle('mobile-open', isOpen);
+            pageBody.classList.toggle('mobile-menu-open', isOpen);
+        }
+
+        // Close mobile menu
+        function closeMobileMenu() {
+            sidebar.classList.remove('mobile-open');
+            sidebarOverlay.classList.remove('mobile-open');
+            pageBody.classList.remove('mobile-menu-open');
+        }
+
+        // Mobile menu toggle button click
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+        }
+
+        // Close menu when clicking overlay
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', closeMobileMenu);
+        }
+
+        // Close menu when clicking nav items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', closeMobileMenu);
+        });
+
+        // Close menu on window resize if screen becomes large
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                closeMobileMenu();
+            }
+        });
+    </script>
     <script>
         // Inject icons after Icons module loads
         function injectIcons() {
