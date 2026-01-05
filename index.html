@@ -12,6 +12,64 @@
 <body>
     <!-- Authentication Check -->
     <script>
+        // Inactivity timeout settings (10 minutes)
+        const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes in milliseconds
+        let inactivityTimer = null;
+        let lastActivity = Date.now();
+        let isAuthenticated = false;
+
+        // Reset inactivity timer on user activity
+        function resetInactivityTimer() {
+            if (!isAuthenticated) return; // Only track if authenticated
+            
+            lastActivity = Date.now();
+            
+            // Clear existing timer
+            if (inactivityTimer) {
+                clearTimeout(inactivityTimer);
+            }
+            
+            // Set new timer
+            inactivityTimer = setTimeout(() => {
+                console.log('User inactive for 1 minute, logging out...');
+                logoutDueToInactivity();
+            }, INACTIVITY_TIMEOUT);
+        }
+
+        // Logout due to inactivity
+        async function logoutDueToInactivity() {
+            console.log('Executing logout due to inactivity');
+            isAuthenticated = false;
+            
+            try {
+                // Logout on server
+                const response = await fetch('api/logout.php', { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                console.log('Logout response:', response.status);
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            
+            // Clear storage and redirect
+            sessionStorage.clear();
+            localStorage.removeItem('currentUser');
+            console.log('Redirecting to login');
+            window.location.replace('login.html?timeout=1');
+        }
+
+        // Track user activity
+        function setupActivityTracking() {
+            const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+            console.log('Setting up activity tracking for events:', events);
+            events.forEach(event => {
+                document.addEventListener(event, resetInactivityTimer, true);
+            });
+        }
+
         // Check if user is authenticated
         async function checkAuth() {
             try {
@@ -25,6 +83,7 @@
                 
                 // Store user info
                 window.currentUser = result.user;
+                isAuthenticated = true;
                 console.log('Current user:', window.currentUser);
                 return true;
             } catch (error) {
@@ -38,6 +97,9 @@
         checkAuth().then(authenticated => {
             if (authenticated && window.currentUser) {
                 console.log('User authenticated, ID:', window.currentUser.id);
+                // Start inactivity tracking after successful auth
+                setupActivityTracking();
+                resetInactivityTimer();
             }
         });
     </script>
@@ -132,7 +194,7 @@
                         </svg>
                         <span id="userDisplay" style="font-size: 14px; font-weight: 600; color: var(--text);"></span>
                     </div>
-                    <button id="themeToggle" onclick="Theme.toggleTheme(); setTimeout(() => Theme.updateThemeIcons(Theme.getCurrentTheme()), 100);" style="width: 40px; height: 40px; padding: 0; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; position: relative; z-index: 100;">
+                    <button id="themeToggle" style="width: 40px; height: 40px; padding: 0; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; position: relative; z-index: 100;">
                         <span class="theme-icon" style="width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; pointer-events: none;"></span>
                     </button>
                 </div>
@@ -286,6 +348,32 @@
     <!-- Notification -->
     <div id="notification"></div>
 
+    <!-- Preview Document Modal -->
+    <div id="previewModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: var(--bg-card); border-radius: 16px; max-width: 90%; max-height: 90%; width: 900px; height: 90%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border);">
+                <h3 id="previewTitle" style="font-size: 18px; font-weight: 700; color: var(--text); margin: 0;">Document Preview</h3>
+                <button type="button" id="closePreviewModal" style="background: transparent; border: none; cursor: pointer; padding: 4px; color: var(--text-muted); transition: all 0.2s;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div id="previewContent" style="flex: 1; padding: 0; overflow: auto; display: flex; align-items: center; justify-content: center; background: var(--bg-alt);">
+                <!-- Preview content will be inserted here -->
+            </div>
+            <div style="padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px;">
+                <button id="previewDownloadBtn" style="padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+                    </svg>
+                    Download
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Floating Action Button -->
     <button id="fabAddTask" class="fab" title="Add New Task">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -385,6 +473,7 @@
         }
     </script>
     <script src="js/storage.js"></script>
+    <script src="js/settings.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/stats.js"></script>
     <script src="js/tasks.js"></script>
@@ -392,6 +481,20 @@
     <script src="js/timeline.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/theme.js"></script>
+    <script>
+        // Setup theme toggle immediately when theme.js is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    if (typeof Theme !== 'undefined') {
+                        Theme.toggleTheme();
+                        setTimeout(() => Theme.updateThemeIcons(Theme.getCurrentTheme()), 50);
+                    }
+                });
+            }
+        });
+    </script>
     <script src="js/documents.js"></script>
     <script src="js/admin.js"></script>
     <script src="js/app.js"></script>
@@ -512,6 +615,7 @@
             if (page === 'progress') App.renderProgress();
             if (page === 'timeline') App.renderTimeline();
             if (page === 'documents') Documents.loadDocuments();
+                    if (page === 'settings' && typeof Settings !== 'undefined') Settings.init();
         }
 
         // Export Tasks
@@ -578,8 +682,27 @@
                 document.getElementById('uploadForm').reset();
             }
 
+            // Preview document
+            if (e.target.closest('.doc-preview-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                const btn = e.target.closest('.doc-preview-btn');
+                console.log('Preview button clicked', btn);
+                const filePath = btn.getAttribute('data-path');
+                const fileName = btn.getAttribute('data-name');
+                const fileExtension = btn.getAttribute('data-extension');
+                console.log('Preview data:', { filePath, fileName, fileExtension });
+                if (typeof Documents !== 'undefined' && Documents.previewDocument) {
+                    Documents.previewDocument(filePath, fileName, fileExtension);
+                } else {
+                    console.error('Documents.previewDocument not found');
+                }
+            }
+
             // Download document
             if (e.target.closest('.doc-download-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
                 const btn = e.target.closest('.doc-download-btn');
                 const filePath = btn.getAttribute('data-path');
                 const fileName = btn.getAttribute('data-name');
@@ -594,6 +717,14 @@
                 const btn = e.target.closest('.doc-delete-btn');
                 const docId = parseInt(btn.getAttribute('data-id'));
                 Documents.deleteDocument(docId);
+            }
+
+            // Close preview modal - check for close button or clicking outside
+            if (e.target.closest('#closePreviewModal') || e.target.id === 'previewModal') {
+                const modal = document.getElementById('previewModal');
+                if (modal) {
+                    modal.style.display = 'none';
+                }
             }
         });
 
@@ -634,23 +765,6 @@
         
         const clearBtn = document.getElementById('clearBtn');
         if (clearBtn) clearBtn.addEventListener('click', clearAllData);
-        
-        // Theme toggle - only set up once here
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                Theme.toggleTheme();
-                setTimeout(() => Theme.updateThemeIcons(Theme.getCurrentTheme()), 100);
-            });
-        }
-        
-        const themeToggle2 = document.getElementById('themeToggle2');
-        if (themeToggle2) {
-            themeToggle2.addEventListener('click', () => {
-                Theme.toggleTheme();
-                setTimeout(() => Theme.updateThemeIcons(Theme.getCurrentTheme()), 100);
-            });
-        }
 
         // Initialize status button handlers
         function initStatusButtons() {

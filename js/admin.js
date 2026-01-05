@@ -44,7 +44,10 @@ const Admin = {
             const result = await response.json();
             
             if (result.success) {
-                this.state.users = result.data || [];
+                this.state.users = (result.data || []).map(user => ({
+                    ...user,
+                    is_active: user.is_active == 1 || user.is_active === '1' ? true : false
+                }));
                 this.state.filteredUsers = this.state.users;
                 this.updateStats();
                 this.renderUsersTable();
